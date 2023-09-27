@@ -1,59 +1,45 @@
 import { galleryItems } from './gallery-items.js';
 // Change code below this line
 
-console.log(galleryItems);
-const galleryList = document.querySelector('ul.gallery');
-let instance = null;
+const gallery = document.querySelector('.gallery')
+const items = []
 
-const onCloseEsc = function (event) {
-  if (event.code === 'Escape') {
-    instance.close();
-    document.removeEventListener('keydown', onCloseEsc);
-  }
-};
+galleryItems.forEach(element => {
+	const galleryItem = document.createElement('div')
+	galleryItem.className = 'gallery__item'
+	const galleryLink = document.createElement('a')
+	galleryLink.className = 'gallery__link'
+	galleryLink.href = element.original
+	const galleryImage = document.createElement('img')
+    galleryImage.className = 'gallery__image'
+    galleryImage.src = element.preview;
+    galleryImage.setAttribute('data-source', element.original)
+    galleryImage.alt = element.description;
 
-const onGalleryClick = event => {
-  event.preventDefault();
+	galleryItem.append(galleryLink)
+	galleryLink.append(galleryImage)
+	items.push(galleryItem)
+})
 
-  const {
-    target: {
-      nodeName,
-      dataset: { source },
-    },
-  } = event;
+gallery.append(...items)
 
-  if (nodeName !== 'IMG') {
-    return;
-  }
+gallery.addEventListener('click', e => {
+    e.preventDefault();
+    if (e.target.nodeName !== 'IMG') {
+		return
+	}
 
-  instance = basicLightbox.create(`
-    <img src="${source}" width="800" height="600">
-  `);
+    const selectedImage = e.target.getAttribute('data-source')
 
-  instance.show();
+    const instance = basicLightbox.create(`
+    <img src="${selectedImage}" width="800" height="600">
+`)
 
-  document.addEventListener('keydown', onCloseEsc);
-};
-
-galleryList.addEventListener('click', onGalleryClick);
-
-function createGalleryMarkup(galleryItems) {
-  return galleryItems
-    .map(galleryItem => {
-      const { preview, original, description } = galleryItem;
-      return `
-        <li class="gallery__item">
-          <a class="gallery__link" href="${original}">
-            <img
-              class="gallery__image"
-              src="${preview}"
-              data-source="${original}"
-              alt="${description}"
-            />
-          </a>
-        </li>`;
-    })
-    .join('');
-}
-
-galleryList.insertAdjacentHTML('beforeend', createGalleryMarkup(galleryItems));
+    instance.show()
+    
+    gallery.addEventListener('keydown', e => {
+		if (e.key === 'Escape') {
+			instance.close()
+		}
+	})
+})
